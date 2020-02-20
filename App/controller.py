@@ -52,7 +52,7 @@ def compareratings (movie1, movie2):
 
 # Funciones para la carga de datos 
 
-def loadBooks (catalog):
+def loadBooks (catalog, sep=','):
     """
     Carga los libros del archivo.  Por cada libro se toman sus autores y por 
     cada uno de ellos, se crea en la lista de autores, a dicho autor y una
@@ -60,20 +60,23 @@ def loadBooks (catalog):
     """
     t1_start = process_time() #tiempo inicial
     booksfile = cf.data_dir + 'GoodReads/books.csv'
-    input_file = csv.DictReader(open(booksfile))
-    for row in input_file:  
-        # Se adiciona el libro a la lista de libros
-        model.addBookList(catalog, row)
-        # Se adiciona el libro al mapa de libros (key=title)
-        model.addBookMap(catalog, row)
-        # Se obtienen los autores del libro
-        authors = row['authors'].split(",")
-        # Cada autor, se crea en la lista de autores del catalogo, y se 
-        # adiciona un libro en la lista de dicho autor (apuntador al libro)
-        for author in authors:
-            model.addAuthor (catalog, author.strip(), row)
+    dialect = csv.excel()
+    dialect.delimiter=sep
+    with open(booksfile, encoding="utf-8") as csvfile:
+        spamreader = csv.DictReader(csvfile, dialect=dialect)
+        for row in spamreader: 
+            # Se adiciona el libro a la lista de libros
+            model.addBookList(catalog, row)
+            # Se adiciona el libro al mapa de libros (key=title)
+            model.addBookMap(catalog, row)
+            # Se obtienen los autores del libro
+            authors = row['authors'].split(",")
+            # Cada autor, se crea en la lista de autores del catalogo, y se 
+            # adiciona un libro en la lista de dicho autor (apuntador al libro)
+            for author in authors:
+                model.addAuthor (catalog, author.strip(), row)
     t1_stop = process_time() #tiempo final
-    print("Tiempo de ejecución carga libros:",t1_stop-t1_start," segundos")    
+    print("Tiempo de ejecución carga libros:",t1_stop-t1_start," segundos")   
 
 
 
