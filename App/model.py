@@ -74,7 +74,7 @@ def addBookList (catalog, row):
     book = newBook(row)
     lt.addLast(books, book)
 
-def addMovieList(catalog, row, row2):
+def addMovieList(catalog, row):
     """
     Adiciona película a la lista
     """
@@ -85,9 +85,9 @@ def addMovieList(catalog, row, row2):
     lt.addLast(movies, movie)
     return movie
 
-def addMovieListVoteData(catalog, row2):
+def addMovieListVoteData(catalog, row):
     """
-    Adiciona película a la lista
+    Adiciona información a una película
     """
     # row es de casting
     # row 2 es de votos
@@ -114,11 +114,16 @@ def addMovieMap(catalog, row):
     movie = newMovie(row)
     map.put(movies, movie['id'], movie, compareByKey)
 
-def addMovieMapVoteData(catalog, row2):
+def addMovieMapVoteData(catalog, row):
     """
-    Adiciona película al map con key=title
+    Adiciona información a una película en el map
     """
-    return None
+    movies = catalog['moviesMap']
+    movie = map.get(movies, row["id"], compareByKey)
+    if movie:
+        movie["title"]= row["title"]
+        movie["vote_average"] = float(row["vote_average"])
+        movie["vote_count"] = float(row["vote_count"])
 
 
 def newAuthor (name, row):
@@ -132,14 +137,13 @@ def newAuthor (name, row):
     lt.addLast(author['authorBooks'],row['book_id'])
     return author
 
-def newActor(name, row, row2):
+def newActor(name, row):
     """
     Crea una nueva estructura para modelar un actor y sus películas
     """
     # row es de casting
     # row 2 es de votos
     actor = {'name':name, "movie_titles": lt.newList("ARRAY_LIST"),  "sum_average_rating":0, "movies_id": lt.newList("ARRAY_LIST")}
-    actor['sum_average_rating'] = float(row2['vote_average'])
     lt.addLast(actor['movies_id'], row['id'])
     return actor
 
@@ -157,9 +161,9 @@ def addAuthor (catalog, name, row,):
             author = newAuthor(name, row)
             map.put(authors, author['name'], author, compareByKey)
 
-def addActor(catalog, name, row, row2):
+def addActor(catalog, name, row):
     """
-    Adiciona un autor al map y sus libros
+    Adiciona un actor al map y sus películas
     """
     # row es de casting
     # row 2 es de votos
@@ -167,14 +171,23 @@ def addActor(catalog, name, row, row2):
         actors = catalog['actors']
         actor=map.get(actors,name,compareByKey)
         if actor:
-            lt.addLast(actor['movie_titles'],row2['title'])
             lt.addLast(actor['movies_id'],row['id'])
-            actor['sum_average_rating'] += float(row['vote_average'])
         else:
-            actor = newActor(name, row, row2)
+            actor = newActor(name, row)
             map.put(actors, actor['name'], actor, compareByKey)
+
+def addActorVoteData(catalog, name, row):
+    actors = catalog['actors']
+    actor=map.get(actors,name,compareByKey)
+    if actor:
+        lt.addLast(actor['movie_titles'],row['title'])
+        lt.addLast(actor['movies_id'],row['id'])
+        actor['sum_average_rating'] += float(row['vote_average'])
+    else:
+        actor = newActor(name, row)
+        map.put(actors, actor['name'], actor, compareByKey)
     
-def newDirector(name, row, row2):
+def newDirector(name, row):
     """
     Crea una nueva estructura para modelar un director y sus películas
     """

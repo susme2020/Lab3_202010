@@ -85,36 +85,38 @@ def loadMovies (catalog, sep=','):
     """
     t1_start = process_time() #tiempo inicial
     moviesfile = cf.data_dir + 'Movies/MoviesCastingRaw-small.csv'
-    moviesfile2 = cf.data_dir + 'Movies/SmallMoviesDetailsCleaned.csv'
     dialect = csv.excel()
     dialect.delimiter=sep
     with open(moviesfile, encoding="utf-8-sig") as csvfile:
-        with open(moviesfile2, encoding="utf-8-sig") as csvfile2:
-            spamreader = csv.DictReader(csvfile, dialect=dialect)
-            spamreader2 = csv.DictReader(csvfile2, dialect=dialect)
-            for row2 in spamreader:
-                # Se adiciona la película a la lista de películas
+        spamreader = csv.DictReader(csvfile, dialect=dialect)
+        # row es de casting
+        # row 2 es de votos
+        for row in spamreader:
+            # Se adiciona la película a la lista de películas
 
-                """ AQUI SE DEBERÍA AGREGAR UNICAMENTE LA INFORMACIÓN DE CASTING """
-                #model.addMovieList(catalog, row)
-                # Se adiciona la película al mapa de películas (key=title)
-                # model.addMovieMap(catalog, row)
-                # Se obtienen los actores de la película
-                actors = ["actor1_name", "actor2_name", "actor3_name", "actor4_name", "actor5_name"]
-                # Se crea en la lista de actores del catalogo, y se 
-                # adiciona una película en la lista de dicho actor (apuntador a la película)
-                for actor in actors:
-                    if actor != None:
-                        """ FALTA TERMINAR """
-                        # model.addActor(catalog, row[actor], row, row2)
-                # Se obtiene el director de la película
-                """ TAMBIÉN FALTA TERMINAR """
-                #model.addDirector(catalog, row["director_name"], row, row2)
-
-            """ AQUI SE DEBERÍA AGREGAR UNICAMENTE LA INFORMACIÓN DE VOTOS """
-            """ TOCA CAMBIAR TODA LA ESTRUCTURA"""
-            for row2 in spamreader2:
-                model.addMovieListVoteData(catalog, row2)
+            """ AQUI SE AGREGA ÚNICAMENTE LA INFORMACIÓN DE CASTING """
+            movie = model.addMovieList(catalog, row)
+            # Se adiciona la película al mapa de películas (key=title)
+            #model.addMovieMap(catalog, row)
+            # Se obtienen los actores de la película
+            actors = ["actor1_name", "actor2_name", "actor3_name", "actor4_name", "actor5_name"]
+            # Se crea en la lista de actores del catalogo, y se 
+            # adiciona una película en la lista de dicho actor (apuntador a la película)
+            for actor in actors:
+                if row[actor] != None:
+                    """ FALTA TERMINAR """
+                    model.addActor(catalog, row[actor], row)
+                    lt.addLast(movie["actors"], row[actor])
+            # Se obtiene el director de la película
+            """ TAMBIÉN FALTA TERMINAR """
+            #model.addDirector(catalog, row["director_name"], row, row2)
+    
+    moviesfile = cf.data_dir + 'Movies/SmallMoviesDetailsCleaned.csv'
+    with open(moviesfile, encoding="utf-8-sig") as csvfile:
+        spamreader = csv.DictReader(csvfile, dialect=dialect)
+        """ AQUI SE DEBERÍA AGREGAR UNICAMENTE LA INFORMACIÓN DE VOTOS """
+        for row in spamreader:
+            model.addMovieListVoteData(catalog, row)
     t1_stop = process_time() #tiempo final
     print("Tiempo de ejecución carga películas:",t1_stop-t1_start," segundos")   
 
