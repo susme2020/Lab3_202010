@@ -136,3 +136,5 @@ dmypy.json
 #Data
 *.csv
 !Data/GoodReads/books.csv
+!Data/Movies/MoviesCastingRaw-small.csv
+!Data/Movies/SmallMoviesDetailsCleaned.csv

@@ -62,7 +62,7 @@ def loadBooks (catalog, sep=','):
     booksfile = cf.data_dir + 'GoodReads/books.csv'
     dialect = csv.excel()
     dialect.delimiter=sep
-    with open(booksfile, encoding="utf-8") as csvfile:
+    with open(booksfile, encoding="utf-8-sig") as csvfile:
         spamreader = csv.DictReader(csvfile, dialect=dialect)
         for row in spamreader: 
             # Se adiciona el libro a la lista de libros
@@ -76,9 +76,47 @@ def loadBooks (catalog, sep=','):
             for author in authors:
                 model.addAuthor (catalog, author.strip(), row)
     t1_stop = process_time() #tiempo final
-    print("Tiempo de ejecución carga libros:",t1_stop-t1_start," segundos")   
+    print("Tiempo de ejecución carga libros:",t1_stop-t1_start," segundos")
 
+def loadMovies (catalog, sep=','):
+    """
+    Carga las películas del archivo.  Por cada película se toman sus directores y por 
+    cada uno de ellos se crea una referencia a la película que se esta procesando.
+    """
+    t1_start = process_time() #tiempo inicial
+    moviesfile = cf.data_dir + 'Movies/MoviesCastingRaw-small.csv'
+    moviesfile2 = cf.data_dir + 'Movies/SmallMoviesDetailsCleaned.csv'
+    dialect = csv.excel()
+    dialect.delimiter=sep
+    with open(moviesfile, encoding="utf-8-sig") as csvfile:
+        with open(moviesfile2, encoding="utf-8-sig") as csvfile2:
+            spamreader = csv.DictReader(csvfile, dialect=dialect)
+            spamreader2 = csv.DictReader(csvfile2, dialect=dialect)
+            for row2 in spamreader:
+                # Se adiciona la película a la lista de películas
 
+                """ AQUI SE DEBERÍA AGREGAR UNICAMENTE LA INFORMACIÓN DE CASTING """
+                #model.addMovieList(catalog, row)
+                # Se adiciona la película al mapa de películas (key=title)
+                # model.addMovieMap(catalog, row)
+                # Se obtienen los actores de la película
+                actors = ["actor1_name", "actor2_name", "actor3_name", "actor4_name", "actor5_name"]
+                # Se crea en la lista de actores del catalogo, y se 
+                # adiciona una película en la lista de dicho actor (apuntador a la película)
+                for actor in actors:
+                    if actor != None:
+                        """ FALTA TERMINAR """
+                        # model.addActor(catalog, row[actor], row, row2)
+                # Se obtiene el director de la película
+                """ TAMBIÉN FALTA TERMINAR """
+                #model.addDirector(catalog, row["director_name"], row, row2)
+
+            """ AQUI SE DEBERÍA AGREGAR UNICAMENTE LA INFORMACIÓN DE VOTOS """
+            """ TOCA CAMBIAR TODA LA ESTRUCTURA"""
+            for row2 in spamreader2:
+                model.addMovieListVoteData(catalog, row2)
+    t1_stop = process_time() #tiempo final
+    print("Tiempo de ejecución carga películas:",t1_stop-t1_start," segundos")   
 
 def initCatalog ():
     """
@@ -87,14 +125,13 @@ def initCatalog ():
     catalog = model.newCatalog()
     return catalog
 
-
-
 def loadData (catalog):
     """
     Carga los datos de los archivos y cargar los datos en la
     estructura de datos
     """
     loadBooks(catalog)
+    loadMovies(catalog)
     
 
 # Funciones llamadas desde la vista y enviadas al modelo
@@ -109,7 +146,18 @@ def getBookInfo(catalog, bookTitle):
     if book:
         return book
     else:
-        return None   
+        return None
+
+def getMovieInfo (catalog, movieTitle):
+    t1_start = process_time() #tiempo inicial
+    movie=model.getMovieInList(catalog, movieTitle)
+    #movie=model.getMovieInMap(catalog, movieTitle)
+    t1_stop = process_time() #tiempo final
+    print("Tiempo de ejecución buscar película:",t1_stop-t1_start," segundos")   
+    if movie:
+        return movie
+    else:
+        return None
 
 def getAuthorInfo(catalog, authorName):
     author=model.getAuthorInfo(catalog, authorName)
@@ -118,3 +166,9 @@ def getAuthorInfo(catalog, authorName):
     else:
         return None    
 
+def getDirectorInfo (catalog, director_name):
+    director=model.getDirectorInfo(catalog, director_name)
+    if director:
+        return director
+    else:
+        return None 
