@@ -21,7 +21,7 @@
 
 import config as cf
 import sys
-import controller 
+import controller
 import csv
 from ADT import list as lt
 from ADT import map as map
@@ -37,11 +37,31 @@ operación solicitada
 
 
 def printMenu():
-    print("Bienvenido al Laboratorio 3")
+    print("\nBienvenido al RETO 2")
     print("1- Cargar información")
     print("2- Buscar película por título")
     print("3- Buscar información de un director por nombre ...")
-    print("4- Requerimiento 3 ...")
+
+    """ Requerimiento 1: Buenas películas """
+
+    print("4- Buenas películas, cuantas películas con votación positiva (vote_average ≥ 6) tiene dado un nombre exacto de director ")
+    
+    """ Requerimiento 2: Votos """
+
+    print("5- Votos, los datos de una película por título exacto: voto promedio, votos totales y su director")
+
+    """ Requerimiento 3: Directores """
+    
+    print("6- Directores, todas las películas de un director dado su nombre exacto. Indicando el número de películas dirigidas, y el promedio de votos obtenidos en sus películas.")
+
+    """ Requerimiento 4: Actores """
+
+    print("7- Actores, todas las películas en las que ha participado un actor dado su nombre exacto. Indicando el total de películas en las que ha participado, el promedio de votos de sus películas y el director que más veces lo ha dirigido.")
+
+    """ Requerimiento 5: Géneros """
+
+    print("8- Géneros, cuántas películas tiene asociadas un género (genres) a partir del nombre exacto del género. Adicionalmente se debe indicar para dicho género, el promedio de votos de todas las películas de dicho género")
+    
     print("0- Salir")
 
 
@@ -78,6 +98,7 @@ while True:
         print ('Mapa: Películas cargadas: ' + str(map.size(catalog['moviesMap'])))
         print ('Mapa: Actores cargados: ' + str(map.size(catalog['actors'])))
         print ('Mapa: Directores cargados: ' + str(map.size(catalog['directors'])))
+        print ('Mapa: Géneros cargados: ' + str(map.size(catalog['genres'])))
         
     elif int(inputs[0])==2: # 2- Buscar película por título
         """

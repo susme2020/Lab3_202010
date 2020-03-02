@@ -49,10 +49,15 @@ def printList (lst):
 def compareratings (movie1, movie2):
     return ( float(movie1['vote_average']) > float(movie2['vote_average']))
 
+def comparemovies (movie_id, movie):
+    return ( movie_id == movie["id"])
+
+def compareitems (item1, item2):
+    return (item1 == item2)
 
 # Funciones para la carga de datos 
 
-def loadBooks (catalog, sep=','):
+def loadBooks (catalog, sep=';'):
     """
     Carga los libros del archivo.  Por cada libro se toman sus autores y por 
     cada uno de ellos, se crea en la lista de autores, a dicho autor y una
@@ -78,45 +83,76 @@ def loadBooks (catalog, sep=','):
     t1_stop = process_time() #tiempo final
     print("Tiempo de ejecución carga libros:",t1_stop-t1_start," segundos")
 
-def loadMovies (catalog, sep=','):
+def loadMovies (catalog, sep=';'):
     """
     Carga las películas del archivo.  Por cada película se toman sus directores y por 
     cada uno de ellos se crea una referencia a la película que se esta procesando.
     """
     t1_start = process_time() #tiempo inicial
-    moviesfile = cf.data_dir + 'Movies/MoviesCastingRaw-small.csv'
+    moviesfile = cf.data_dir + '/Movies/MoviesCastingRaw-small.csv'
     dialect = csv.excel()
     dialect.delimiter=sep
     with open(moviesfile, encoding="utf-8-sig") as csvfile:
         spamreader = csv.DictReader(csvfile, dialect=dialect)
-        # row es de casting
-        # row 2 es de votos
         for row in spamreader:
-            # Se adiciona la película a la lista de películas
 
             """ AQUI SE AGREGA ÚNICAMENTE LA INFORMACIÓN DE CASTING """
-            movie = model.addMovieList(catalog, row)
-            # Se adiciona la película al mapa de películas (key=title)
-            #model.addMovieMap(catalog, row)
             # Se obtienen los actores de la película
-            actors = ["actor1_name", "actor2_name", "actor3_name", "actor4_name", "actor5_name"]
             # Se crea en la lista de actores del catalogo, y se 
             # adiciona una película en la lista de dicho actor (apuntador a la película)
+
+            actors = ["actor1_name", "actor2_name", "actor3_name", "actor4_name", "actor5_name"]
+            actors_movie = lt.newList("ARRAY_LIST")
             for actor in actors:
-                if row[actor] != None:
-                    """ FALTA TERMINAR """
+                if row[actor] != "none":
                     model.addActor(catalog, row[actor], row)
-                    lt.addLast(movie["actors"], row[actor])
+                    lt.addLast(actors_movie, row[actor])
+            
+            #tipo_de_estructura = "lista"
+            tipo_de_estructura = "mapa"
+            
+            # Se adiciona la película a la lista de películas
+            if tipo_de_estructura == "lista":
+                model.addMovieList(catalog, row, actors_movie)
+
+
+            # Se adiciona la película al mapa de películas (key=title)
+            if tipo_de_estructura == "mapa":
+                model.addMovieMap(catalog, row, actors_movie)
+
             # Se obtiene el director de la película
-            """ TAMBIÉN FALTA TERMINAR """
-            #model.addDirector(catalog, row["director_name"], row, row2)
+            model.addDirector(catalog, row["director_name"], row)
     
-    moviesfile = cf.data_dir + 'Movies/SmallMoviesDetailsCleaned.csv'
+    moviesfile = cf.data_dir + '/Movies/SmallMoviesDetailsCleaned.csv'
     with open(moviesfile, encoding="utf-8-sig") as csvfile:
         spamreader = csv.DictReader(csvfile, dialect=dialect)
+
+        actors = map.keySet(catalog["actors"])
+        directors = map.keySet(catalog["directors"])
+
         """ AQUI SE DEBERÍA AGREGAR UNICAMENTE LA INFORMACIÓN DE VOTOS """
         for row in spamreader:
-            model.addMovieListVoteData(catalog, row)
+            """
+            Con estructura de Lista
+            """
+            if tipo_de_estructura == "lista":
+                addMovieListVoteData(catalog, row)
+            """
+            Con estructura de Mapa
+            """
+            if tipo_de_estructura == "mapa":
+                model.addMovieMapVoteData(catalog, row)
+
+            for actor in actors:
+                model.addActorVoteData(catalog, actor, row)
+
+            for director in directors:
+                model.addDirectorVoteData(catalog, director, row)
+
+            generos = row["genres"].split("|")
+            for genero in generos:
+                model.addGenre(catalog, genero, row)
+
     t1_stop = process_time() #tiempo final
     print("Tiempo de ejecución carga películas:",t1_stop-t1_start," segundos")   
 
@@ -132,7 +168,7 @@ def loadData (catalog):
     Carga los datos de los archivos y cargar los datos en la
     estructura de datos
     """
-    loadBooks(catalog)
+    #loadBooks(catalog)
     loadMovies(catalog)
     
 
@@ -152,8 +188,8 @@ def getBookInfo(catalog, bookTitle):
 
 def getMovieInfo (catalog, movieTitle):
     t1_start = process_time() #tiempo inicial
-    movie=model.getMovieInList(catalog, movieTitle)
-    #movie=model.getMovieInMap(catalog, movieTitle)
+    #movie=model.getMovieInList(catalog, movieTitle)
+    movie=model.getMovieInMap(catalog, movieTitle)
     t1_stop = process_time() #tiempo final
     print("Tiempo de ejecución buscar película:",t1_stop-t1_start," segundos")   
     if movie:
@@ -173,4 +209,23 @@ def getDirectorInfo (catalog, director_name):
     if director:
         return director
     else:
-        return None 
+        return None
+
+def addMovieListVoteData(catalog, row):
+    """
+    Adiciona información a una película
+    """
+    movies = catalog["moviesList"]
+    movie_pos = lt.isPresent(movies, row["id"], comparemovies)
+    if movie_pos != 0:
+        movie = lt.getElement(movies, movie_pos)
+        model.addMovieListVoteData(movie, row)
+
+def addMovieMapVoteData(catalog, row):
+    """
+    Adiciona información a una película
+    """
+    movies = catalog['moviesMap']
+    movie = map.get(movies, row["id"], comparemovies)
+    if movie:
+        model.addMovieMapVoteData(movie, row)
